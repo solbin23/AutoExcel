@@ -1,4 +1,4 @@
-package com.excel.mapping;
+package com.excel.autoExcel.mapping;
 
 
 import com.excel.autoExcel.vo.ExcelRow;
