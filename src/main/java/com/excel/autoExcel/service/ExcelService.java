@@ -5,7 +5,7 @@ import com.excel.autoExcel.vo.ExcelRow;
 import com.excel.autoExcel.vo.FieldRow;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
+
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +17,7 @@ import java.util.List;
 @Service
 public class ExcelService {
 
-    public byte[] buildExcel(ExcelRow excel, Class<?>  reqVoClass, Class<?> resVoClass) throws Exception{
+    public byte[] buildExcel(List<ExcelRow> excelList, Class<?>  reqVoClass, Class<?> resVoClass) throws Exception{
 
     //1. 리플렉션으로 필드 정보 수집
         List<FieldRow> reqFields = SpecIntrospector.introspectReq(reqVoClass);
@@ -40,14 +40,17 @@ public class ExcelService {
             }
 
             //row
-            Row v = sheet.createRow(r++);
-            int i = 0;
-            v.createCell(i++).setCellValue(nvl(excel.getInterfaceId()));
-            v.createCell(i++).setCellValue(nvl(excel.getHttpMethod()));
-            v.createCell(i++).setCellValue(nvl(excel.getPath()));
-            v.createCell(i++).setCellValue(nvl(excel.getContentType()));
-            v.createCell(i++).setCellValue(nvl(excel.getRequestClassName()));
-            v.createCell(i++).setCellValue(nvl(excel.getResponseClassName()));
+            for (ExcelRow excelRow : excelList) {
+                Row v = sheet.createRow(r++);
+                int i = 0;
+                v.createCell(i++).setCellValue(nvl(excelRow.getInterfaceId()));
+                v.createCell(i++).setCellValue(nvl(excelRow.getHttpMethod()));
+                v.createCell(i++).setCellValue(nvl(excelRow.getPath()));
+                v.createCell(i++).setCellValue(nvl(excelRow.getContentType()));
+                v.createCell(i++).setCellValue(nvl(excelRow.getRequestClassName()));
+                v.createCell(i++).setCellValue(nvl(excelRow.getResponseClassName()));
+            }
+
 
             for (int e = 0; e < headers.length; e++) {
                 sheet.autoSizeColumn(e);
