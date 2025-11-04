@@ -1,16 +1,18 @@
 package com.excel.autoExcel.mapping;
 
 
-import ch.qos.logback.core.joran.conditional.Condition;
+
 import com.excel.autoExcel.vo.ExcelRow;
+
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.core.ResolvableType;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.condition.PathPatternsRequestCondition;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
@@ -25,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.apache.camel.util.ObjectHelper.isAssignableFrom;
 
 @Component
 @RequiredArgsConstructor
@@ -79,7 +80,7 @@ public class FieldMapping {
         Class<?> responseVo = resolveResponseBodyType(method.getMethod());
 
         //InterfaceID
-
+        String interfaceId = resolveInterfaceId(method);
 
         return null;
     }
@@ -106,6 +107,15 @@ public class FieldMapping {
         }
         return null;
     }
+
+    private String resolveInterfaceId(HandlerMethod method) {
+    Operation operation = method.getMethodAnnotation(Operation.class);
+    if(operation != null && ! operation.operationId().isBlank()) {
+        return operation.operationId();
+
+    }
+    return method.getBeanType().getSimpleName() + "@" + method.getMethod().getName();
+     }
 
 
     private Class<?> resolveRequestBodyType(Method m) {
