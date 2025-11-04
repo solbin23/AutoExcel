@@ -4,6 +4,7 @@ package com.excel.autoExcel.mapping;
 
 import com.excel.autoExcel.vo.ExcelRow;
 
+import com.excel.autoExcel.vo.FieldRow;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 
@@ -49,7 +50,7 @@ public class FieldMapping {
             }
 
         }
-    return null;
+    return excelRows;
     }
 
 
@@ -82,7 +83,14 @@ public class FieldMapping {
         //InterfaceID
         String interfaceId = resolveInterfaceId(method);
 
-        return null;
+        return ExcelRow.builder()
+                .interfaceId(interfaceId)
+                .httpMethod(httpMethod)
+                .path(path)
+                .contentType(contentType)
+                .requestClassName(requestVo != null ? requestVo.getName() : "")
+                .responseClassName(responseVo != null ? responseVo.getName() : "")
+                .build();
     }
 
     private String extractFirstPath(RequestMappingInfo info) {

@@ -7,12 +7,14 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.stereotype.Service;
 
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
 public class ExcelService {
 
     public byte[] buildExcel(ExcelRow excel, Class<?>  reqVoClass, Class<?> resVoClass) throws Exception{
