@@ -10,6 +10,6 @@ public class ExcelRow {
     private String httpMethod; // GET , POST 등
     private String path;
     private String contentType; // application/json
-    private String requestClassName;
-    private String responseClassName;
+    private Class<?> requestClass;
+    private Class<?> responseClass;
 }

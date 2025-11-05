@@ -88,8 +88,6 @@ public class FieldMapping {
                 .httpMethod(httpMethod)
                 .path(path)
                 .contentType(contentType)
-                .requestClassName(requestVo != null ? requestVo.getName() : "")
-                .responseClassName(responseVo != null ? responseVo.getName() : "")
                 .build();
     }
 

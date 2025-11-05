@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 @Builder
 public class FieldRow {
+    private String interfaceId;
     private String ioType; // REQUEST , RESPONSE
     private String path;
     private String javaType;  // String, Long, List<String> ...

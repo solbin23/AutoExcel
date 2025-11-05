@@ -6,15 +6,16 @@ import org.springframework.boot.autoconfigure.graphql.GraphQlProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class SpecIntrospector {
 
-    public static List<FieldRow> introspectReq(Class<?> requestVo) {
-        return introspectWithTag(requestVo, "REQUEST");
+    //루트가 클래스일 때
+    public static List<FieldRow> introspectReq(String interfaceId,String ioType,Class<?> root) {
+        List<FieldRow> fieldRows = new ArrayList<>();
+        Set<Type> types = new HashSet<>();
+        walk(root, "", ioType,interfaceId,fieldRows, types);
+        return fieldRows;
     }
 
     public static List<FieldRow> introspectResp(Class<?> responseVo) {
@@ -46,13 +47,28 @@ public class SpecIntrospector {
                  .build();
     }
 
-    private static void Type(Type type, String basePath, List<FieldRow> acc, Set<Type> visited, String ioType) {
+    private static void walk(Type type, String basePath, String ioType, String interfaceId,
+                             List<FieldRow> filedRowList, Set<Type> visited) {
         if(type == null) return;
-        if (visited.contains(type)) return; //순환 참조 방지
-        visited.add(type);
-
         Class<?> raw = getRaw(type);
         if(raw == null) return;
+
+        if (!isLeaf(raw) && !visited.add(type)) return; //순환 참조 방지
+
+        //ENUM
+        if(raw.isEnum()) {
+            filedRowList.add(FieldRow.builder()
+                            .interfaceId(interfaceId)
+                            .ioType(ioType)
+                            .path(basePath.isEmpty() ? raw.getSimpleName() : basePath)
+                            .javaType(raw.getSimpleName())
+                            .required(false)
+                            .description(null)
+                            .example(null)
+                            .enums(String.join(",", enumConstants(raw)))
+                            .build());
+        }
+
 
         //단순 타입이면 더 탐색하지 않음
         if (isLeaf(raw)) {
@@ -81,6 +97,24 @@ public class SpecIntrospector {
         }
 
         return null;
+    }
+
+    private static String typeName(Type type) {
+        Class<?> raw = getRaw(type);
+        if(raw == null) return String.valueOf(type);
+        if(raw.isArray()) return raw.getComponentType().getSimpleName() + "[]";
+        if (Collection.class.isAssignableFrom(raw)){
+            Type elem =firstGenericArg(type);
+            Class<?> e = getRaw(elem);
+            return "List<" + (e != null ? e.getSimpleName() : "?") + ">";
+        }
+        return raw.getSimpleName();
+    }
+    private static List<String> enumConstants(Class<?> raw) {
+        Object[] arr = raw.getEnumConstants();
+        List<String> list = new ArrayList<>();
+        if (arr != null) for(Object o : arr) list.add(((Enum<?>) o).name());
+        return list;
     }
 
     private static Type firstGenericArg(Type type) {

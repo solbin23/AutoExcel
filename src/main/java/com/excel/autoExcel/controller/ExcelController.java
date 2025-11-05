@@ -23,7 +23,7 @@ public class ExcelController {
 
     @GetMapping(value = "/excel", produces = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     public ResponseEntity<byte[]> downloadExcel(@RequestParam String type) throws Exception {
-        List<ExcelRow> metas = fieldMapping.scanAll("");
+        List<ExcelRow> excelList = fieldMapping.scanAll("");
 
 
 
