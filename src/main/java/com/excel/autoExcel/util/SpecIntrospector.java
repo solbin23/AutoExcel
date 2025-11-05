@@ -4,32 +4,26 @@ import com.excel.autoExcel.vo.FieldRow;
 import org.springframework.boot.autoconfigure.graphql.GraphQlProperties;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
 
+import static com.excel.autoExcel.util.DocUtils.description;
+
 public class SpecIntrospector {
 
-    //루트가 클래스일 때
-    public static List<FieldRow> introspectReq(String interfaceId,String ioType,Class<?> root) {
+
+
+    //루트 클래스를 받아 필드 행 생성
+    public static List<FieldRow> introspect(String interfaceId,String ioType,Class<?> root) {
         List<FieldRow> fieldRows = new ArrayList<>();
         Set<Type> types = new HashSet<>();
         walk(root, "", ioType,interfaceId,fieldRows, types);
         return fieldRows;
     }
 
-    public static List<FieldRow> introspectResp(Class<?> responseVo) {
-        return introspectWithTag(responseVo,"RESPONSE");
-
-    }
-
-    private static List<FieldRow> introspectWithTag (Class<?> rootClass, String ioType) {
-        List<FieldRow> acc = new ArrayList<>();
-        Type(rootClass,"",acc, new HashSet<>(), ioType);
-
-        return acc;
-
-    }
 
 
     private static FieldRow buildRow (String ioType , String path, Schema schema, Class<?> javaType, boolean required) {
@@ -55,6 +49,23 @@ public class SpecIntrospector {
 
         if (!isLeaf(raw) && !visited.add(type)) return; //순환 참조 방지
 
+        for(Field field : raw.getDeclaredFields()) {
+            field.setAccessible(true);
+
+
+            String desc = DocUtils.description(field);
+            String ex = DocUtils.example(field);
+            String enumStr = DocUtils.enums(field,getRaw(field.getGenericType()));
+            boolean req = DocUtils.required(field);
+
+            String name = field.getName();
+            //경로
+            String path = basePath.isEmpty() ? name : basePath + "." + name;
+            Type tp = field.getGenericType();
+
+            Class<?> r = getRaw(tp);
+
+        }
         //ENUM
         if(raw.isEnum()) {
             filedRowList.add(FieldRow.builder()

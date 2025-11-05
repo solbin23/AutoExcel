@@ -19,14 +19,6 @@ public class ExcelService {
 
     public byte[] buildExcel(List<ExcelRow> excelList, Class<?>  reqVoClass, Class<?> resVoClass) throws Exception{
 
-    //1. 리플렉션으로 필드 정보 수집
-        List<FieldRow> reqFields = SpecIntrospector.introspectReq(reqVoClass);
-        List<FieldRow> resFields = SpecIntrospector.introspectReq(resVoClass);
-
-        List<FieldRow> allFields = new ArrayList<>();
-        allFields.addAll(reqFields);
-        allFields.addAll(resFields);
-
         try(XSSFWorkbook wb = new XSSFWorkbook()){
 
             Sheet sheet = wb.createSheet();
@@ -47,8 +39,8 @@ public class ExcelService {
                 v.createCell(i++).setCellValue(nvl(excelRow.getHttpMethod()));
                 v.createCell(i++).setCellValue(nvl(excelRow.getPath()));
                 v.createCell(i++).setCellValue(nvl(excelRow.getContentType()));
-                v.createCell(i++).setCellValue(nvl(excelRow.getRequestClassName()));
-                v.createCell(i++).setCellValue(nvl(excelRow.getResponseClassName()));
+                v.createCell(i++).setCellValue(excelRow.getRequestClass() != null ? excelRow.getRequestClass().getName() : "" );
+                v.createCell(i++).setCellValue(excelRow.getResponseClass() != null ? excelRow.getResponseClass().getName() : "" );
             }
 
 
@@ -67,6 +59,7 @@ public class ExcelService {
 
             }
 
+            List<FieldRow> allFields = new ArrayList<>();
             for (FieldRow rowData : allFields) {
                 Row row = fieldSheet.createRow(fieldRow);
                 int col = 0;
