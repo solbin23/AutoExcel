@@ -1,7 +1,7 @@
 package com.excel.autoExcel.util;
 
 import com.excel.autoExcel.vo.FieldRow;
-import org.springframework.boot.autoconfigure.graphql.GraphQlProperties;
+
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -10,7 +10,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
 
-import static com.excel.autoExcel.util.DocUtils.description;
 
 public class SpecIntrospector {
 
@@ -49,21 +48,40 @@ public class SpecIntrospector {
 
         if (!isLeaf(raw) && !visited.add(type)) return; //순환 참조 방지
 
-        for(Field field : raw.getDeclaredFields()) {
+        //복합 객체 필드 순회
+        Field[] fields = raw.getDeclaredFields();
+        for(Field field : fields) {
             field.setAccessible(true);
-
 
             String desc = DocUtils.description(field);
             String ex = DocUtils.example(field);
-            String enumStr = DocUtils.enums(field,getRaw(field.getGenericType()));
+            Class<?> fRow = getRaw(field.getGenericType());
+            String enums = DocUtils.enums(field,fRow);
             boolean req = DocUtils.required(field);
 
             String name = field.getName();
             //경로
             String path = basePath.isEmpty() ? name : basePath + "." + name;
             Type tp = field.getGenericType();
+            Class<?> tpRow = getRaw(tp);
 
-            Class<?> r = getRaw(tp);
+            //Collection(List/Set ...)
+            if (tpRow != null && Collection.class.isAssignableFrom(tpRow)){
+                Type elem = firstGenericArg(tp);
+                Class<?> elemRow = getRaw(elem);
+                String listPath = path + "[]";
+
+                filedRowList.add(FieldRow.builder()
+                                .interfaceId(interfaceId)
+                                .ioType(ioType)
+                                .path(listPath)
+                                .javaType("List<" + (elemRow != null ? elemRow.getSimpleName() : "?") + ">")
+                                .required(req)
+                                .description(desc)
+                                .example(ex)
+                                .enums(elemRow != null && elemRow.isEnum() ? String.join(",", enumConstants(elemRow)) : enums)
+                        .build());
+            }
 
         }
         //ENUM
@@ -81,8 +99,15 @@ public class SpecIntrospector {
         }
 
 
-        //단순 타입이면 더 탐색하지 않음
+       //리프 타입
         if (isLeaf(raw)) {
+            filedRowList.add(FieldRow.builder()
+                            .interfaceId(interfaceId)
+                            .ioType(ioType)
+                            .path(basePath)
+                            .javaType(typeName(type))
+                            .required(false)
+                    .build());
             return;
         }
     }
