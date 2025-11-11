@@ -3,7 +3,7 @@ package com.excel.autoExcel.controller;
 
 import com.excel.autoExcel.mapping.FieldMapping;
 import com.excel.autoExcel.service.ExcelService;
-import com.excel.autoExcel.vo.ExcelRow;
+import com.excel.autoExcel.vo.SpecLayout;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,7 +23,7 @@ public class ExcelController {
 
     @GetMapping(value = "/excel", produces = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     public ResponseEntity<byte[]> downloadExcel(@RequestParam String type) throws Exception {
-        List<ExcelRow> excelList = fieldMapping.scanAll("");
+        List<SpecLayout> excelList = fieldMapping.scanAll("");
 
 
 

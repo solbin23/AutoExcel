@@ -1,7 +1,7 @@
 package com.excel.autoExcel.service;
 
 import com.excel.autoExcel.util.SpecIntrospector;
-import com.excel.autoExcel.vo.ExcelRow;
+import com.excel.autoExcel.vo.SpecLayout;
 import com.excel.autoExcel.vo.FieldRow;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -18,7 +18,7 @@ import java.util.List;
 @Service
 public class ExcelService {
 
-    public byte[] buildExcel(List<ExcelRow> rows) throws Exception{
+    public byte[] buildExcel(List<SpecLayout> rows) throws Exception{
 
         try(XSSFWorkbook wb = new XSSFWorkbook()){
 
@@ -33,15 +33,15 @@ public class ExcelService {
             }
 
             //row
-            for (ExcelRow excelRow : rows) {
+            for (SpecLayout specLayout : rows) {
                 Row v = sheet.createRow(r++);
                 int i = 0;
-                v.createCell(i++).setCellValue(nvl(excelRow.getInterfaceId()));
-                v.createCell(i++).setCellValue(nvl(excelRow.getHttpMethod()));
-                v.createCell(i++).setCellValue(nvl(excelRow.getPath()));
-                v.createCell(i++).setCellValue(nvl(excelRow.getContentType()));
-                v.createCell(i++).setCellValue(excelRow.getRequestClass() != null ? excelRow.getRequestClass().getName() : "" );
-                v.createCell(i++).setCellValue(excelRow.getResponseClass() != null ? excelRow.getResponseClass().getName() : "" );
+                v.createCell(i++).setCellValue(nvl(specLayout.getInterfaceId()));
+                v.createCell(i++).setCellValue(nvl(specLayout.getHttpMethod()));
+                v.createCell(i++).setCellValue(nvl(specLayout.getPath()));
+                v.createCell(i++).setCellValue(nvl(specLayout.getContentType()));
+                v.createCell(i++).setCellValue(specLayout.getRequestClass() != null ? specLayout.getRequestClass().getName() : "" );
+                v.createCell(i++).setCellValue(specLayout.getResponseClass() != null ? specLayout.getResponseClass().getName() : "" );
             }
 
 
@@ -61,14 +61,14 @@ public class ExcelService {
             }
 
             List<FieldRow> allFields = new ArrayList<>();
-            for (ExcelRow excelRow : rows) {
-                if (excelRow.getRequestClass() != null) {
-                    allFields.addAll(SpecIntrospector.introspect(excelRow.getInterfaceId(),"REQUEST",excelRow.getRequestClass()));
+            for (SpecLayout specLayout : rows) {
+                if (specLayout.getRequestClass() != null) {
+                    allFields.addAll(SpecIntrospector.introspect(specLayout.getInterfaceId(),"REQUEST", specLayout.getRequestClass()));
 
                 }
 
-                if (excelRow.getResponseClass() != null) {
-                    allFields.addAll(SpecIntrospector.introspect(excelRow.getInterfaceId(), "RESPONSE",excelRow.getResponseClass()));
+                if (specLayout.getResponseClass() != null) {
+                    allFields.addAll(SpecIntrospector.introspect(specLayout.getInterfaceId(), "RESPONSE", specLayout.getResponseClass()));
                 }
             }
 

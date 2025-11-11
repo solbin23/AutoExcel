@@ -2,9 +2,8 @@ package com.excel.autoExcel.mapping;
 
 
 
-import com.excel.autoExcel.vo.ExcelRow;
+import com.excel.autoExcel.vo.SpecLayout;
 
-import com.excel.autoExcel.vo.FieldRow;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 
@@ -37,11 +36,11 @@ public class FieldMapping {
     private final RequestMappingHandlerMapping handlerMapping;
 
     //ExcelRow 목록 생성
-    public List<ExcelRow> scanAll(String basePackagePre) {
+    public List<SpecLayout> scanAll(String basePackagePre) {
 
         Map<RequestMappingInfo, HandlerMethod> map = handlerMapping.getHandlerMethods();
 
-        List<ExcelRow> excelRows = new ArrayList<>();
+        List<SpecLayout> specLayouts = new ArrayList<>();
         for (Map.Entry<RequestMappingInfo, HandlerMethod> e : map.entrySet()) {
             HandlerMethod handlerMethod = e.getValue();
             Class<?> controllerClass = handlerMethod.getBeanType();
@@ -50,11 +49,11 @@ public class FieldMapping {
             }
 
         }
-    return excelRows;
+    return specLayouts;
     }
 
 
-    private ExcelRow buildExcelRow(RequestMappingInfo info, HandlerMethod method) {
+    private SpecLayout buildExcelRow(RequestMappingInfo info, HandlerMethod method) {
         //HTTP Method
         String httpMethod = info.getMethodsCondition().getMethods().isEmpty()
                 ? "UNSPECIFIED"
@@ -83,7 +82,7 @@ public class FieldMapping {
         //InterfaceID
         String interfaceId = resolveInterfaceId(method);
 
-        return ExcelRow.builder()
+        return SpecLayout.builder()
                 .interfaceId(interfaceId)
                 .httpMethod(httpMethod)
                 .path(path)
