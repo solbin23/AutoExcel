@@ -81,7 +81,46 @@ public class SpecIntrospector {
                                 .example(ex)
                                 .enums(elemRow != null && elemRow.isEnum() ? String.join(",", enumConstants(elemRow)) : enums)
                         .build());
+
+                if (elemRow != null && isLeaf(elemRow) && !elemRow.isEnum()) {
+                    walk(elem,listPath,ioType,interfaceId,filedRowList,visited);
+                }
+
+                continue;
             }
+
+            //배열
+            if (tpRow != null && tpRow.isArray()) {
+                Class<?> elemRow = tpRow.getComponentType();
+                String arrPath = path + "[]";
+
+
+                filedRowList.add(FieldRow.builder()
+                                .interfaceId(interfaceId)
+                                .ioType(ioType)
+                                .path(arrPath)
+                                .javaType(elemRow.getSimpleName() + "[]")
+                                .required(req)
+                                .description(desc)
+                                .example(ex)
+                                .enums(elemRow.isEnum() ? String.join(",", enumConstants(elemRow)) : enums)
+                        .build());
+
+                if (!isLeaf(elemRow) && !elemRow.isEnum()) {
+                    walk(elemRow,arrPath,ioType,interfaceId,filedRowList,visited);
+                }
+
+                continue;
+            }
+
+            if (tpRow != null && isLeaf(tpRow)) {
+
+                filedRowList.add(FieldRow.builder()
+
+                        .build());
+            }
+
+
 
         }
         //ENUM
@@ -97,6 +136,8 @@ public class SpecIntrospector {
                             .enums(String.join(",", enumConstants(raw)))
                             .build());
         }
+
+
 
 
        //리프 타입
