@@ -113,11 +113,33 @@ public class SpecIntrospector {
                 continue;
             }
 
+            //단일 필드
             if (tpRow != null && isLeaf(tpRow)) {
 
                 filedRowList.add(FieldRow.builder()
-
+                                .interfaceId(interfaceId)
+                                .ioType(ioType)
+                                .path(path)
+                                .javaType(typeName(type))
+                                .required(req)
+                                .description(desc)
+                                .example(ex)
+                                .enums(tpRow.isEnum() ? String.join(",", enumConstants(tpRow)) : enums)
                         .build());
+            } else {
+                //중첩 객체
+                filedRowList.add(FieldRow.builder()
+                                .interfaceId(interfaceId)
+                                .ioType(ioType)
+                                .path(path)
+                                .javaType(tpRow != null ? tpRow.getSimpleName() : String.valueOf(type))
+                                .required(req)
+                                .description(desc)
+                                .example(ex)
+                                .enums(tpRow != null && tpRow.isEnum() ? String.join(",", enumConstants(tpRow)) : enums)
+                        .build());
+
+                walk(tp,path,ioType,interfaceId,filedRowList,visited);
             }
 
 
