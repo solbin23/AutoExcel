@@ -3,6 +3,7 @@ package com.excel.autoExcel.service;
 import com.excel.autoExcel.util.SpecIntrospector;
 import com.excel.autoExcel.vo.SpecLayout;
 import com.excel.autoExcel.vo.FieldRow;
+import jakarta.persistence.Index;
 import org.apache.poi.ss.usermodel.*;
 
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -14,7 +15,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
+
 
 @Service
 public class ExcelService {
@@ -24,75 +25,17 @@ public class ExcelService {
         try(XSSFWorkbook wb = new XSSFWorkbook()){
 
             Sheet sheet = wb.createSheet("문서양식");
-            int r = 0;
+            setWidths(sheet,1,4d,2,16d,3,12d,4,22d,5,14d,6,22d,7,14d,8,22d,9,14d,10,22d,11,16d,12,24d);
+            int r = 1;
 
             //header
-            Row headerRow = sheet.createRow(r++);
-            String[] headers = {"Interface ID","HTTP Method", "Path","Content-Type", "RequestVo", "ResponseVo"};
-            for (int c = 0; c < headers.length; c++) {
-                headerRow.createCell(c).setCellValue(headers[c]);
-            }
-
-            //row
-            for (SpecLayout specLayout : layout) {
-                Row v = sheet.createRow(r++);
-                int i = 0;
-                v.createCell(i++).setCellValue(nvl(specLayout.getInterfaceId()));
-                v.createCell(i++).setCellValue(nvl(specLayout.getHttpMethod()));
-                v.createCell(i++).setCellValue(nvl(specLayout.getPath()));
-                v.createCell(i++).setCellValue(nvl(specLayout.getContentType()));
-                v.createCell(i++).setCellValue(specLayout.getRequestClass() != null ? specLayout.getRequestClass().getName() : "" );
-                v.createCell(i++).setCellValue(specLayout.getResponseClass() != null ? specLayout.getResponseClass().getName() : "" );
-            }
+            merge(sheet,r,2,r,12);
+            cell(sheet,r,2,"항목 LAYOUT", headFill(wb));
+            bold(sheet,r,2,12);
+            center(sheet,r,2);
+            r+=2;
 
 
-            for (int c = 0; c < headers.length; c++) {
-                sheet.autoSizeColumn(c);
-            }
-
-            // Field
-            Sheet fieldSheet = wb.createSheet("FIELDS");
-            int fieldRow = 0;
-
-            Row fieldHeaderRow = fieldSheet.createRow(fieldRow++);
-            String[] fieldHeaders = { "IO TYPE", "PATH","TYPE","Required","Description","Example","Enum"};
-            for (int c = 0; c<fieldHeaders.length; c++) {
-                fieldHeaderRow.createCell(c).setCellValue(fieldHeaders[c]);
-
-            }
-
-            List<FieldRow> allFields = new ArrayList<>();
-            for (SpecLayout specLayout : rows) {
-                if (specLayout.getRequestClass() != null) {
-                    allFields.addAll(SpecIntrospector.introspect(specLayout.getInterfaceId(),"REQUEST", specLayout.getRequestClass()));
-
-                }
-
-                if (specLayout.getResponseClass() != null) {
-                    allFields.addAll(SpecIntrospector.introspect(specLayout.getInterfaceId(), "RESPONSE", specLayout.getResponseClass()));
-                }
-            }
-
-            allFields.sort(Comparator
-                    .comparing(FieldRow::getInterfaceId,Comparator.nullsFirst(String::compareTo))
-                    .thenComparing(FieldRow::getIoType)
-                    .thenComparing(FieldRow::getPath));
-
-            for (FieldRow fr : allFields) {
-                Row v = fieldSheet.createRow(fieldRow++);
-                int i = 0;
-                v.createCell(i++).setCellValue(nvl(fr.getInterfaceId()));
-                v.createCell(i++).setCellValue(nvl(fr.getIoType()));
-                v.createCell(i++).setCellValue(nvl(fr.getPath()));
-                v.createCell(i++).setCellValue(nvl(fr.getJavaType()));
-                v.createCell(i++).setCellValue(fr.isRequired() ? "Y" : "N");
-                v.createCell(i++).setCellValue(nvl(fr.getDescription()));
-                v.createCell(i++).setCellValue(nvl(fr.getExample()));
-                v.createCell(i++).setCellValue(nvl(fr.getEnums()));
-            }
-            for (int c = 0; c < fieldHeaders.length; c++) {
-                sheet.autoSizeColumn(c);
-            }
 
             //엑셀로 반환
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -104,12 +47,14 @@ public class ExcelService {
     }
 
     // 셀 스타일
-    private void setWidths(Sheet ws, Map<Integer,Double> widths) {widths.forEach((oneBasedCol, w) -> {
-        int zeroBased = oneBasedCol-1;
-        int poiWidth = (int) Math.round(w * 256); //문자 폭 기준
-        poiWidth = Math.max(0, Math.min(poiWidth, 255 *256));
-        ws.setColumnWidth(zeroBased, poiWidth);
-    });
+    private void setWidths(Sheet ws, Object... pairs) {
+        for (int i=0; i < pairs.length; i+=2) {
+            int oneBased = (Integer) pairs[i];
+            double widthChars = ((Number) pairs[i+1]).doubleValue();
+            int width = (int) Math.round(widthChars * 256);
+            width = Math.max(0, Math.min(width, 255 * 256));
+            ws.setColumnWidth(oneBased -1 ,width);
+        }
     }
     private void merge(Sheet ws, int r1, int c1, int r2, int c2) {
         ws.addMergedRegion(new CellRangeAddress(r1-1,r2-1,c1-1,c2-1));
@@ -149,6 +94,16 @@ public class ExcelService {
 
     }
 
+    private void bold(Sheet ws,int r,int c, int size) {
+        Cell cell = ensureCell(ws, r, c);
+        CellStyle ct = ws.getWorkbook().createCellStyle();
+        ct.cloneStyleFrom(cell.getCellStyle());
+        Font font = ws.getWorkbook().createFont();
+        font.setBold(true);
+        font.setFontHeightInPoints((short)size);
+        ct.setFont(font);
+        cell.setCellStyle(ct);
+    }
 
     private Cell ensureCell(Sheet ws, int r, int c) {
         Row row = ws.getRow(r-1);
@@ -170,6 +125,21 @@ public class ExcelService {
         s.setVerticalAlignment(VerticalAlignment.CENTER);
         return s;
 
+    }
+    private CellStyle fill(XSSFWorkbook wb, short color) {
+        CellStyle s = wb.createCellStyle();
+        s.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        s.setFillForegroundColor(color);
+        s.setAlignment(HorizontalAlignment.CENTER);
+        s.setWrapText(true);
+        s.setBorderTop(BorderStyle.THIN);
+        s.setBorderBottom(BorderStyle.THIN);
+        s.setBorderLeft(BorderStyle.THIN);
+        s.setBorderRight(BorderStyle.THIN);
+        return s;
+    }
+    private CellStyle headFill(XSSFWorkbook wb) {
+     return fill(wb, IndexedColors.LIGHT_CORNFLOWER_BLUE.getIndex());
     }
     private String nvl(String s) {
         return (s == null) ? "" : s;
