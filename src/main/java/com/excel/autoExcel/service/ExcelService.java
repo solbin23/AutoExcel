@@ -1,9 +1,8 @@
 package com.excel.autoExcel.service;
 
-import com.excel.autoExcel.util.SpecIntrospector;
+
 import com.excel.autoExcel.vo.SpecLayout;
-import com.excel.autoExcel.vo.FieldRow;
-import jakarta.persistence.Index;
+
 import org.apache.poi.ss.usermodel.*;
 
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -12,9 +11,7 @@ import org.springframework.stereotype.Service;
 
 
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+
 
 
 @Service
@@ -35,6 +32,9 @@ public class ExcelService {
             center(sheet,r,2);
             r+=2;
 
+            //표
+
+
 
 
             //엑셀로 반환
@@ -46,6 +46,20 @@ public class ExcelService {
 
     }
 
+    private int metaRow(Sheet sheet, XSSFWorkbook wb, int r, String k, String v){
+        merge(sheet,r,2,r,3);
+        cell(sheet,r,2,k,headFill(wb));
+        bold(sheet,r,2,10);
+        center(sheet,r,2);
+        merge(sheet,r,4,r,12);
+        cell(sheet,r,4,nullToEmpty(v),wrap(sheet));
+        border(sheet,r,2,r,12);
+        return r+1;
+    }
+
+    private static String nullToEmpty(String str){
+        return str==null?"":str;
+    }
     // 셀 스타일
     private void setWidths(Sheet ws, Object... pairs) {
         for (int i=0; i < pairs.length; i+=2) {
@@ -55,6 +69,12 @@ public class ExcelService {
             width = Math.max(0, Math.min(width, 255 * 256));
             ws.setColumnWidth(oneBased -1 ,width);
         }
+    }
+    private void thin(CellStyle cellStyle){
+        cellStyle.setBorderTop(BorderStyle.THIN);
+        cellStyle.setBorderBottom(BorderStyle.THIN);
+        cellStyle.setBorderLeft(BorderStyle.THIN);
+        cellStyle.setBorderRight(BorderStyle.THIN);
     }
     private void merge(Sheet ws, int r1, int c1, int r2, int c2) {
         ws.addMergedRegion(new CellRangeAddress(r1-1,r2-1,c1-1,c2-1));
@@ -105,6 +125,21 @@ public class ExcelService {
         cell.setCellStyle(ct);
     }
 
+    private void border(Sheet sheet, int r1, int c1,int r2, int c2) {
+        for(int r= r1; r<=r2 ; r++) {
+            if(sheet.getRow(r-1) == null) {
+                sheet.createRow(r-1);
+            }
+            for(int c= c1; c<=c2 ; c++) {
+                Cell cell = sheet.getRow(r-1).getCell(c-1);
+                CellStyle cellStyle = sheet.getWorkbook().createCellStyle();
+                cellStyle.cloneStyleFrom(cell.getCellStyle());
+                thin(cellStyle);
+                cell.setCellStyle(cellStyle);
+            }
+        }
+    }
+
     private Cell ensureCell(Sheet ws, int r, int c) {
         Row row = ws.getRow(r-1);
         if (row == null) {
@@ -118,6 +153,7 @@ public class ExcelService {
         return  cell;
     }
 
+    // ===== 스타일 / 셀 유틸 ====
     private CellStyle wrap(Sheet ws) {
         CellStyle s = ws.getWorkbook().createCellStyle();
         s.setWrapText(true);
@@ -126,20 +162,21 @@ public class ExcelService {
         return s;
 
     }
-    private CellStyle fill(XSSFWorkbook wb, short color) {
+    private CellStyle fill(XSSFWorkbook wb, String fg) {
         CellStyle s = wb.createCellStyle();
         s.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-        s.setFillForegroundColor(color);
+        s.setFillForegroundColor(IndexedColors.valueOf(fg).getIndex());
         s.setAlignment(HorizontalAlignment.CENTER);
         s.setWrapText(true);
-        s.setBorderTop(BorderStyle.THIN);
-        s.setBorderBottom(BorderStyle.THIN);
-        s.setBorderLeft(BorderStyle.THIN);
-        s.setBorderRight(BorderStyle.THIN);
+        thin(s);
         return s;
     }
     private CellStyle headFill(XSSFWorkbook wb) {
-     return fill(wb, IndexedColors.LIGHT_CORNFLOWER_BLUE.getIndex());
+     return fill(wb, "BDD7EE");
+    }
+
+    private CellStyle headerFill(XSSFWorkbook wb) {
+        return fill(wb, "DCE6F1");
     }
     private String nvl(String s) {
         return (s == null) ? "" : s;
