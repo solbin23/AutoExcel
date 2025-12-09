@@ -1,6 +1,7 @@
 package com.excel.autoExcel.service;
 
 
+import com.excel.autoExcel.util.FlattenUtils;
 import com.excel.autoExcel.util.TypeUtils;
 import com.excel.autoExcel.vo.FieldRow;
 import com.excel.autoExcel.vo.SpecLayout;
@@ -18,6 +19,7 @@ import java.util.*;
 
 import static com.excel.autoExcel.util.ExcelCellUtils.*;
 import static com.excel.autoExcel.util.ExcelLayoutWriter.*;
+import static com.excel.autoExcel.util.SpecIntrospector.buildRow;
 import static com.excel.autoExcel.util.TypeUtils.*;
 
 
@@ -58,7 +60,7 @@ public class ExcelService {
             r = textBlock(sheet, wb, r, "유의사항", TypeUtils.nvl(layout.getNote()),3);
 
             // ==== 요청/응답 명세 ====
-            List<FieldRow> reqRows = layout.getRequestClass() != null ? flatten(layout.getRequestClass(),"Body.data") : Collections.emptyList();
+            List<FieldRow> reqRows = layout.getRequestClass() != null ? FlattenUtils.flatten(layout.getInterfaceId(),"REQUEST",layout.getRequestClass()) : Collections.emptyList();
 
             //엑셀로 반환
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -70,30 +72,5 @@ public class ExcelService {
     }
 
 
-    // ========필드 전개========
-    private List<FieldRow> flatten(Class<?> root, String group){
-        List<FieldRow> rows = new ArrayList<>();
-        walk(root, group,"",rows,new HashSet<Type>());
-        return rows;
-    }
 
-    private void walk(Type type, String group, String prefix, List<FieldRow> rows, Set<Type> visited){
-        Class<?> raw = toRaw(type);
-        if (raw == null) {
-            return ;
-        }
-
-        if (!isLeaf(raw) && ! raw.isEnum()) {
-            if (!visited.add(type)){
-                return; //순환 참조 방지
-            }
-        }
-
-        if (java.util.Collection.class.isAssignableFrom(raw)) {
-            Type elem = firstArg(type);
-            String p = prefix + "[]";
-         //   rows.add(new FieldRow(group, display(p), p, "N","-","",javaName(elem)));
-
-        }
-    }
 }
