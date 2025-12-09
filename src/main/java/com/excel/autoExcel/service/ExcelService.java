@@ -19,8 +19,7 @@ import java.util.*;
 
 import static com.excel.autoExcel.util.ExcelCellUtils.*;
 import static com.excel.autoExcel.util.ExcelLayoutWriter.*;
-import static com.excel.autoExcel.util.SpecIntrospector.buildRow;
-import static com.excel.autoExcel.util.TypeUtils.*;
+
 
 
 @Service
