@@ -2,11 +2,10 @@ package com.excel.autoExcel.util;
 
 import com.excel.autoExcel.vo.FieldRow;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static com.excel.autoExcel.util.TypeUtils.*;
 
@@ -58,7 +57,34 @@ public final class FlattenUtils {
             walk(interfaceId,ioType,comp,path,rows,visited);
             return;
         }
+
+        // 리프/Enum
+        if (isLeaf(raw) || raw.isEnum()) {
+            if (!prefix.isEmpty()){
+                rows.add(FieldRow.buildRow(interfaceId,ioType, prefix, javaName(type),false,null,null,enumValuesString(raw)));
+            }
+            return;
+        }
+
+        //객체 필드 순회
+        for (Field field : raw.getDeclaredFields()) {
+            if(Modifier.isStatic(field.getModifiers())){
+                continue;
+            }
+            String path = prefix.isEmpty() ? field.getName() : prefix + "." + field.getName();
+            Class<?> fieldType = field.getType();
+
+            if (Collection.class.isAssignableFrom(fieldType) ||fieldType.isArray()) {
+                walk(interfaceId,ioType,field.getGenericType(),path,rows,visited);
+            } else if (isLeaf(fieldType) || fieldType.isEnum()) {
+                rows.add(FieldRow.buildRow(interfaceId,ioType, path, javaName(field.getGenericType()),false,null,null,enumValuesString(fieldType)));
+            } else {
+                walk(interfaceId, ioType, field.getGenericType(), prefix, rows, visited);
+            }
+        }
     }
+
+
 
 
 
