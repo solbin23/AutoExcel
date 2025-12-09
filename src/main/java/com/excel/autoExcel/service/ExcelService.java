@@ -1,6 +1,7 @@
 package com.excel.autoExcel.service;
 
 
+import com.excel.autoExcel.util.TypeUtils;
 import com.excel.autoExcel.vo.FieldRow;
 import com.excel.autoExcel.vo.SpecLayout;
 
@@ -41,20 +42,20 @@ public class ExcelService {
             r+=2;
 
             // ==== 메타 표 ====
-            r = metaRow(sheet, wb, r, "인터페이스 ID",nvl(layout.getInterfaceId()));
-            r = metaRow(sheet, wb, r, "API URL", nvl(layout.getPath()));
-            r = metaRow(sheet, wb, r, "HTTP Method", nvl(layout.getHttpMethod()));
-            r = metaRow(sheet, wb, r, "Content Type", nvl(layout.getContentType()));
+            r = metaRow(sheet, wb, r, "인터페이스 ID", TypeUtils.nvl(layout.getInterfaceId()));
+            r = metaRow(sheet, wb, r, "API URL", TypeUtils.nvl(layout.getPath()));
+            r = metaRow(sheet, wb, r, "HTTP Method", TypeUtils.nvl(layout.getHttpMethod()));
+            r = metaRow(sheet, wb, r, "Content Type", TypeUtils.nvl(layout.getContentType()));
             r = metaRow(sheet, wb, r, "Request VO", layout.getRequestClass() != null ? layout.getRequestClass().getName() : "");
             r = metaRow(sheet, wb, r, "Response VO", layout.getResponseClass() != null ? layout.getResponseClass().getName() : "");
-            r = metaRow(sheet, wb, r, "Target", nvl(layout.getTarget()));
-            r = metaRow(sheet, wb, r, "Source", nvl(layout.getSource()));
+            r = metaRow(sheet, wb, r, "Target", TypeUtils.nvl(layout.getTarget()));
+            r = metaRow(sheet, wb, r, "Source", TypeUtils.nvl(layout.getSource()));
             r++;
 
             // ==== 기능/조건/유의사항 ====
-            r = textBlock(sheet, wb ,r,"기능요건", nvl(layout.getFuncReq()),3);
-            r = textBlock(sheet, wb, r, "조건요건", nvl(layout.getCondReq()),3);
-            r = textBlock(sheet, wb, r, "유의사항", nvl(layout.getNote()),3);
+            r = textBlock(sheet, wb ,r,"기능요건", TypeUtils.nvl(layout.getFuncReq()),3);
+            r = textBlock(sheet, wb, r, "조건요건", TypeUtils.nvl(layout.getCondReq()),3);
+            r = textBlock(sheet, wb, r, "유의사항", TypeUtils.nvl(layout.getNote()),3);
 
             // ==== 요청/응답 명세 ====
             List<FieldRow> reqRows = layout.getRequestClass() != null ? flatten(layout.getRequestClass(),"Body.data") : Collections.emptyList();
