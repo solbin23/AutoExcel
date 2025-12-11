@@ -8,15 +8,17 @@ import static com.excel.autoExcel.util.TypeUtils.nvl;
 @Builder
 @Value
 public class FieldRow {
-    private String interfaceId;
-    private String ioType; // REQUEST , RESPONSE
-    private String path;
-    private String javaType;  // String, Long, List<String> ...
-    private boolean required; //true면 Y
-    private String description;
-    private String example;
-    private String enums;
+     String interfaceId;
+     String ioType; // REQUEST , RESPONSE
+     String path;
+     String javaType;  // String, Long, List<String> ...
+     boolean required; //true면 Y
+     String description;
+     String example;
+     String enums;
 
+     boolean groupHeader; //true면 그룹(리스트) 머리행
+     String displayPath;
 
     public static FieldRow buildRow(String interfaceId, String ioType, String path, String javaType, boolean required, String description, String example,String enums) {
         return FieldRow.builder()
