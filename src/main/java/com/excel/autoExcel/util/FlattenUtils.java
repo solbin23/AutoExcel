@@ -22,8 +22,13 @@ public final class FlattenUtils {
      */
 
     // ========필드 전개========
-    public static List<FieldRow> flatten(String interfaceId, String ioType, Class<?> root){
+    public static List<FieldRow> flatten(String interfaceId, String ioType, Class<?> root, String basePrefix){
         List<FieldRow> rows = new ArrayList<>();
+        if(root == null) {
+            return rows;
+        }
+
+        String prefix = (basePrefix == null) ? "" : basePrefix;
         walk(interfaceId, ioType,root,"",rows,new HashSet<Type>());
         return rows;
     }
