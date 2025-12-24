@@ -45,11 +45,21 @@ public final class FlattenUtils {
             }
         }
 
-        //List/Collection
+        //List/Collection ->  헤더행 + 자식행
         if (java.util.Collection.class.isAssignableFrom(raw)) {
             Type elem = firstArg(type);
-            String path = prefix + "[]";
-            rows.add(FieldRow.buildRow(interfaceId,ioType, path, javaName(type),false,null,null,enumValuesString(toRaw(elem))));
+            String path = prefix;
+            rows.add(FieldRow.builder()
+                            .interfaceId(interfaceId)
+                            .ioType(ioType)
+                            .path(path)
+                            .displayPath(lastSegment(path))
+                            .javaType("List<" + javaName(elem) + ">")
+                            .required(false)
+                            .groupHeader(true) // 그룹헤더
+                    .build());
+
+            String childPrefix = path + "[]";
             walk(interfaceId,ioType,elem,path,rows,visited);
             return ;
         }
@@ -91,6 +101,17 @@ public final class FlattenUtils {
 
 
 
+    private static String lastSegment(String path) {
+        if (path == null || path.isEmpty()) {
+            return "";
+        }
+        String p = path;
+        if (p.endsWith("[]")) {
+            p = p.substring(0, p.length() - 2);
+            int idx = Math.max(p.lastIndexOf('.'), p.lastIndexOf('/'));
+            return (idx >= 0) ? p.substring(idx + 1) : p;
+        }
+    }
 
 
     /** Enum 클래스면 모든 상수 이름을 "A,B,C" 형태로 반환 */
