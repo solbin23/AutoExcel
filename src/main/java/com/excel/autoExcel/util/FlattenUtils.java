@@ -108,9 +108,9 @@ public final class FlattenUtils {
         String p = path;
         if (p.endsWith("[]")) {
             p = p.substring(0, p.length() - 2);
-            int idx = Math.max(p.lastIndexOf('.'), p.lastIndexOf('/'));
-            return (idx >= 0) ? p.substring(idx + 1) : p;
         }
+        int idx = Math.max(p.lastIndexOf('.'), p.lastIndexOf('/'));
+        return (idx >= 0) ? p.substring(idx + 1) : p;
     }
 
 
